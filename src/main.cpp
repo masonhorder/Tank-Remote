@@ -81,6 +81,9 @@
 #define VBATPIN A7
 
 #define buzzerPin 6
+
+
+#define rightSwitch 19
 //joystick configuration
 
 // joystick 1
@@ -173,14 +176,16 @@ void rgbColor(int redColor, int greenColor, int blueColor) {
 }
 
 void buzzer(byte PIN, byte delayOn, byte delayOff, byte loops) {
-  for (byte i=0; i<loops; i++)  {
-    digitalWrite(PIN,HIGH);
-    delay(delayOn);
-    digitalWrite(PIN,LOW);
-    delay(delayOff);
+  if ( digitalRead(rightSwitch) != 1){
+    // for (byte i=0; i<loops; i++)  {
+    //   // digitalWrite(PIN,HIGH);
+    //   // delay(delayOn);
+    //   // digitalWrite(PIN,LOW);
+    //   // delay(delayOff);
+    // }
+    delay(0);
   }
 }
-
 void connectionLedOn() {
   digitalWrite(connectionLed,HIGH);
 }
@@ -252,7 +257,7 @@ void setup()
   pinMode(greenRGBPin, OUTPUT); 
   pinMode(blueRGBPin, OUTPUT);
 
-
+  pinMode (rightSwitch, INPUT);
 
   // analog set up
 
@@ -347,12 +352,18 @@ void loop() {
       lastConnection = millis();   
     } 
     else {
-      Serial.println("No reply, is anyone listening?");
+      lcd.home();
+      lcd.clear();
+      lcd.setCursor(0,1);
+      lcd.print("No reply");
     }
   }
   
   else {
-    Serial.println("Sending failed (no ack)");
+    lcd.home();
+    lcd.clear();
+    lcd.setCursor(0,1);
+    lcd.print("Sending Failed");
     
   }
 
@@ -364,9 +375,17 @@ void loop() {
 
   if (millis() - lastConnection == 0){
     connectionLedOn();
+    lcd.home();
+    lcd.clear();
+    lcd.setCursor(0,2);
+    lcd.print("Connected");
   } 
 
   else if(millis() - lastConnection < 3500 ){
+    lcd.home();
+    lcd.clear();
+    lcd.setCursor(0,2);
+    lcd.print("No Connection");
     connectionLedOff();
     buzzer(buzzerPin, 80,70, 3);
   }
@@ -386,8 +405,9 @@ void loop() {
   measuredvbat *= 3.3;  // Multiply by 3.3V, our reference voltage
   measuredvbat /= 1024; // convert to voltage
   if(measuredvbat > 3.9){
-    rgbColor(0,255,0);
-    // rgbColor(0,255,255);
+    // rgbColor(0,255,0);
+    // rgbColor(255,166,0);
+    rgbColor(255,0,0);
   }
   else if(measuredvbat > 3.7){
     rgbColor(255,166,0);
@@ -395,12 +415,9 @@ void loop() {
   else if(measuredvbat <= 3.7){
     rgbColor(255,0,0);
   }
-  batteryPercentage = (((4.2 - measuredvbat)*200)-100)*-1;
- 
-  Serial.println(batteryPercentage);
-  lcd.home();
-  lcd.clear();
-  lcd.print(batteryPercentage);
+  
+
+  
 	
   delay(50);
 
